@@ -6,6 +6,8 @@ import Planner from './components/Planner';
 import Explore from './components/Explore';
 import Assistant from './components/Assistant';
 import Checkout from './components/Checkout';
+import PhotoLab from './components/PhotoLab';
+import LiveGuide from './components/LiveGuide';
 import { Menu } from 'lucide-react';
 import { ThemeProvider } from './context/ThemeContext';
 
@@ -38,6 +40,8 @@ const AppContent: React.FC = () => {
             <Route path="/planner" element={<Planner />} />
             <Route path="/explore" element={<Explore />} />
             <Route path="/assistant" element={<Assistant />} />
+            <Route path="/photo-lab" element={<PhotoLab />} />
+            <Route path="/live-guide" element={<LiveGuide />} />
             <Route path="/checkout" element={<Checkout />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>

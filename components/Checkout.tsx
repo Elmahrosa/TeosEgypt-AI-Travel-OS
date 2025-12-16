@@ -18,14 +18,24 @@ interface CryptoQuote {
   amountNeeded: number;
 }
 
-// Mock Token Data Configuration
-const TOKEN_DATA: Record<string, { price: number; name: string; chain: 'EVM' | 'Solana' }> = {
-  TEOS: { price: 0.42, name: 'TEOS Token', chain: 'EVM' },
-  USDT: { price: 1.00, name: 'Tether USD', chain: 'EVM' },
-  SOL: { price: 145.20, name: 'Solana', chain: 'Solana' },
-  ERT: { price: 0.085, name: 'Egypt Resort', chain: 'EVM' },
-  USD1: { price: 1.00, name: 'USD1 Stable', chain: 'EVM' },
-  EGP: { price: 0.021, name: 'Digital EGP', chain: 'EVM' },
+// Token Configuration with Network & UI details
+const TOKEN_DATA: Record<string, { price: number; name: string; chain: 'EVM' | 'Solana'; color: string }> = {
+  TEOS: { price: 0.42, name: 'TEOS Token', chain: 'EVM', color: 'bg-amber-500' },
+  USDT: { price: 1.00, name: 'Tether USD', chain: 'EVM', color: 'bg-emerald-500' },
+  SOL: { price: 145.20, name: 'Solana', chain: 'Solana', color: 'bg-purple-500' },
+  ERT: { price: 0.085, name: 'Egypt Resort', chain: 'EVM', color: 'bg-blue-600' },
+  USD1: { price: 1.00, name: 'USD1 Stable', chain: 'EVM', color: 'bg-cyan-500' },
+  EGP: { price: 0.021, name: 'Digital EGP', chain: 'EVM', color: 'bg-red-600' },
+};
+
+// Mock Balances for Demo
+const MOCK_BALANCES: Record<string, string> = {
+  TEOS: '1,250.00',
+  USDT: '420.50',
+  SOL: '14.20',
+  ERT: '10,000.00',
+  USD1: '1,000.00',
+  EGP: '25,450.00'
 };
 
 const Checkout: React.FC = () => {
@@ -64,22 +74,17 @@ const Checkout: React.FC = () => {
     setQuoteLoading(true);
     setQuoteError(null);
     try {
-      // Simulate API Fetch with error handling
-      await new Promise((resolve, reject) => {
-        // Randomly simulate network flicker (1% chance) for demo purposes, or keep it reliable
-        // if (Math.random() < 0.05) reject(new Error("Network timeout"));
-        setTimeout(resolve, 600);
-      }); 
+      // Simulate API Fetch delay
+      await new Promise((resolve) => setTimeout(resolve, 600)); 
       
       const tokenInfo = TOKEN_DATA[tokenKey];
       if (!tokenInfo) throw new Error("Token data unavailable");
 
       const price = tokenInfo.price;
       
-      // Dynamic gas calculation (simulated)
-      // Solana is cheaper than EVM in this mock
-      const baseGas = tokenInfo.chain === 'Solana' ? 0.005 : 0.12;
-      const variableGas = 0.003 * costNumeric; 
+      // Dynamic gas calculation: Solana is cheaper than EVM
+      const baseGas = tokenInfo.chain === 'Solana' ? 0.002 : 0.15;
+      const variableGas = 0.001 * costNumeric; 
       const gas = baseGas + variableGas;
       
       const needed = (costNumeric + gas) / price;
@@ -195,7 +200,7 @@ const Checkout: React.FC = () => {
                     : 'border-slate-200 dark:border-slate-700 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'
                 }`}
               >
-                <div className="absolute top-2 right-2 px-1.5 py-0.5 bg-blue-500 text-white text-[10px] font-bold rounded">MULTI</div>
+                <div className="absolute top-2 right-2 px-1.5 py-0.5 bg-blue-500 text-white text-[10px] font-bold rounded">MULTI-CHAIN</div>
                 <Coins className="w-6 h-6" />
                 <span className="font-bold text-sm">Crypto / Token</span>
               </button>
@@ -226,21 +231,28 @@ const Checkout: React.FC = () => {
                 )}
 
                 {/* Token Selector */}
-                <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-                  {Object.keys(TOKEN_DATA).map((token) => (
-                    <button
-                      key={token}
-                      onClick={() => setSelectedToken(token)}
-                      disabled={switchingNetwork}
-                      className={`px-4 py-2 rounded-lg text-xs font-bold whitespace-nowrap border transition-all ${
-                        selectedToken === token
-                          ? 'bg-slate-800 text-white border-slate-800 dark:bg-white dark:text-slate-900'
-                          : 'bg-white dark:bg-slate-700 text-slate-500 border-slate-200 dark:border-slate-600 hover:border-slate-400'
-                      } ${switchingNetwork ? 'opacity-50 cursor-not-allowed' : ''}`}
-                    >
-                      {token}
-                    </button>
-                  ))}
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Select Payment Token</label>
+                  <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+                    {Object.keys(TOKEN_DATA).map((token) => (
+                      <button
+                        key={token}
+                        onClick={() => setSelectedToken(token)}
+                        disabled={switchingNetwork}
+                        className={`px-4 py-2.5 rounded-xl text-xs font-bold whitespace-nowrap border transition-all flex items-center gap-2 ${
+                          selectedToken === token
+                            ? 'bg-slate-800 text-white border-slate-800 dark:bg-white dark:text-slate-900 shadow-md'
+                            : 'bg-white dark:bg-slate-700 text-slate-500 border-slate-200 dark:border-slate-600 hover:border-slate-400 hover:bg-slate-50 dark:hover:bg-slate-600'
+                        } ${switchingNetwork ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      >
+                        <span 
+                          className={`w-2.5 h-2.5 rounded-full ${TOKEN_DATA[token].color}`} 
+                          title={`${TOKEN_DATA[token].chain} Network`}
+                        />
+                        {token}
+                      </button>
+                    ))}
+                  </div>
                 </div>
 
                 {/* Crypto Payment Section */}
@@ -256,7 +268,7 @@ const Checkout: React.FC = () => {
                       className="text-xs text-blue-600 hover:text-blue-700 flex items-center gap-1 disabled:opacity-50"
                     >
                       <RefreshCw className={`w-3 h-3 ${quoteLoading ? 'animate-spin' : ''}`} />
-                      Refresh
+                      Refresh Rate
                     </button>
                   </div>
 
@@ -331,9 +343,18 @@ const Checkout: React.FC = () => {
                     )}
                   </div>
 
-                  <div className="mt-3 text-[10px] text-slate-400 leading-tight">
-                    <strong>Payment Network:</strong> {TOKEN_DATA[selectedToken].chain} Mainnet
-                    <br /> Fiat via TapCollect API coming soon.
+                  <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700 flex justify-between items-center">
+                    <div className="text-[10px] text-slate-400 leading-tight">
+                        Payment Network
+                    </div>
+                    <div className={`text-xs font-bold px-2 py-0.5 rounded border flex items-center gap-1 ${
+                        TOKEN_DATA[selectedToken].chain === 'Solana' 
+                        ? 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-900/30 dark:text-purple-300 dark:border-purple-700'
+                        : 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-700'
+                    }`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${TOKEN_DATA[selectedToken].chain === 'Solana' ? 'bg-purple-500' : 'bg-blue-500'}`}></span>
+                        {TOKEN_DATA[selectedToken].chain} Mainnet
+                    </div>
                   </div>
                 </div>
               </div>
@@ -370,7 +391,7 @@ const Checkout: React.FC = () => {
                {status === 'connected' && !switchingNetwork ? (
                  <>
                    <p className="text-3xl font-bold text-blue-400 mb-1">
-                     {selectedToken === 'TEOS' ? '1,250.00' : '0.00'}
+                     {MOCK_BALANCES[selectedToken] || '0.00'}
                    </p>
                    <p className="text-xs text-slate-400">{selectedToken} Available</p>
                  </>
@@ -386,7 +407,7 @@ const Checkout: React.FC = () => {
                </div>
              </div>
              {/* Abstract BG */}
-             <div className="absolute -bottom-12 -right-12 w-32 h-32 bg-blue-500 rounded-full blur-3xl opacity-20"></div>
+             <div className={`absolute -bottom-12 -right-12 w-32 h-32 rounded-full blur-3xl opacity-20 transition-colors duration-500 ${TOKEN_DATA[selectedToken].color.replace('bg-', 'bg-')}`}></div>
            </div>
 
            <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700">

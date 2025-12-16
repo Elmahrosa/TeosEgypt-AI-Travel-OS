@@ -1,6 +1,6 @@
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Map, Calendar, MessageSquareText, Sun, Moon, Pyramid } from 'lucide-react';
+import { LayoutDashboard, Map, Calendar, MessageSquareText, Sun, Moon, Pyramid, Sparkles, AudioWaveform } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 
 interface SidebarProps {
@@ -18,6 +18,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
     { path: '/planner', label: 'Trip Planner', icon: Calendar },
     { path: '/explore', label: 'Explore Egypt', icon: Map },
     { path: '/assistant', label: 'TEOS Guide', icon: MessageSquareText },
+    { path: '/photo-lab', label: 'Photo Lab', icon: Sparkles },
+    { path: '/live-guide', label: 'Live Guide', icon: AudioWaveform },
   ];
 
   const handleNavigation = (path: string) => {

@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { GeminiService } from '../services/geminiService';
 import { ChatMessage } from '../types';
-import { Send, Bot, User, Loader2, Mic, MicOff } from 'lucide-react';
+import { Send, Bot, User, Loader2, Mic, MicOff, MapPin, ExternalLink } from 'lucide-react';
 
 // Type definition for Web Speech API
 interface IWindow extends Window {
@@ -113,11 +113,16 @@ const Assistant: React.FC = () => {
     try {
       const stream = GeminiService.createChatStream(history, userMsg.text);
       let fullText = '';
+      let allChunks: any[] = [];
 
       for await (const chunk of stream) {
-        fullText += chunk;
+        if (chunk.text) fullText += chunk.text;
+        if (chunk.groundingChunks) {
+          allChunks = [...allChunks, ...chunk.groundingChunks];
+        }
+
         setMessages(prev => prev.map(m => 
-          m.id === botMsgId ? { ...m, text: fullText } : m
+          m.id === botMsgId ? { ...m, text: fullText, groundingChunks: allChunks } : m
         ));
       }
       
@@ -171,6 +176,34 @@ const Assistant: React.FC = () => {
               {msg.text}
               {msg.isStreaming && (
                 <span className="inline-block w-1.5 h-4 ml-1 align-middle bg-amber-500 animate-pulse"></span>
+              )}
+
+              {/* Grounding Sources */}
+              {msg.groundingChunks && msg.groundingChunks.length > 0 && (
+                 <div className="mt-3 pt-3 border-t border-slate-200 dark:border-slate-600">
+                    <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2">Sources & Maps</p>
+                    <div className="flex flex-wrap gap-2">
+                      {msg.groundingChunks.map((chunk, idx) => {
+                          if (chunk.maps) {
+                             return (
+                               <a key={idx} href={chunk.maps.uri} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-xs bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors text-blue-600 dark:text-blue-400">
+                                 <MapPin className="w-3 h-3 text-amber-500" />
+                                 <span className="truncate max-w-[150px]">{chunk.maps.title || "View Map"}</span>
+                               </a>
+                             )
+                          }
+                          if (chunk.web) {
+                             return (
+                               <a key={idx} href={chunk.web.uri} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-xs bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors text-blue-600 dark:text-blue-400">
+                                 <ExternalLink className="w-3 h-3 text-slate-400" />
+                                 <span className="truncate max-w-[150px]">{chunk.web.title || "Source"}</span>
+                               </a>
+                             )
+                          }
+                          return null;
+                      })}
+                    </div>
+                 </div>
               )}
             </div>
           </div>

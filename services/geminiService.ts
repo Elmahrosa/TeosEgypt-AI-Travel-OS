@@ -6,12 +6,14 @@ const ai = new GoogleGenAI({ apiKey });
 
 // Model configuration
 const MODEL_FLASH = 'gemini-2.5-flash';
+const MODEL_IMAGE = 'gemini-2.5-flash-image';
+const MODEL_LIVE = 'gemini-2.5-flash-native-audio-preview-09-2025';
 
 const TEOS_SYSTEM_PROMPT = `
 # 🇪🇬 TEOS EGYPT AI — OFFICIAL SYSTEM PROMPT
 
 ## SYSTEM ROLE
-You are **TEOS Egypt AI**, the official digital assistant of **TEOS Egypt**.
+You are **TEOS Egypt AI**, the official digital assistant of **TEOS Egypt** (https://travelai.teosegypt.com/).
 
 You represent a national-scale Egyptian platform focused on:
 - Travel
@@ -26,7 +28,7 @@ You are the **official digital voice of TEOS Egypt**.
 
 ## 👤 OFFICIAL IDENTITY (MANDATORY)
 
-- **Founder & Owner:** Ayman Seif  
+- **Founder Elmahrosa & TEOS Egypt:** Ayman Seif  
 - **Official Support & Contact Email:** ayman@teosegypt.com  
 
 ### Support Rule (STRICT)
@@ -143,6 +145,7 @@ You MUST:
 ## 🌐 PLATFORM CONTEXT
 
 - Platform: **TEOS Egypt – AI Travel OS**
+- Website: **https://travelai.teosegypt.com/**
 - Deployment: Web, PWA, iOS, Android
 - Users: Egyptians, tourists, investors, partners
 - Positioning: Civic-first, Egypt-rooted, globally scalable
@@ -163,6 +166,7 @@ Act with authority, hospitality, cultural intelligence, and national pride at al
 export const GeminiService = {
   /**
    * Generates a structured travel itinerary based on user input.
+   * Includes retry logic and markdown sanitization.
    */
   generateItinerary: async (
     prefs: UserPreferences
@@ -184,39 +188,41 @@ export const GeminiService = {
     
     Ensure the response is strictly valid JSON matching the schema.`;
 
-    try {
-      const response = await ai.models.generateContent({
-        model: MODEL_FLASH,
-        contents: prompt,
-        config: {
-          responseMimeType: "application/json",
-          responseSchema: {
-            type: Type.OBJECT,
-            properties: {
-              tripTitle: { type: Type.STRING },
-              summary: { type: Type.STRING },
-              totalEstimatedCost: { type: Type.STRING },
-              currency: { type: Type.STRING },
-              days: {
-                type: Type.ARRAY,
-                items: {
-                  type: Type.OBJECT,
-                  properties: {
-                    day: { type: Type.INTEGER },
-                    title: { type: Type.STRING },
-                    location: { type: Type.STRING },
-                    estimatedCost: { type: Type.STRING },
-                    activities: {
-                      type: Type.ARRAY,
-                      items: { type: Type.STRING }
-                    },
-                    accommodation: {
-                      type: Type.OBJECT,
-                      properties: {
-                        name: { type: Type.STRING },
-                        rating: { type: Type.STRING },
-                        priceLevel: { type: Type.STRING },
-                        description: { type: Type.STRING }
+    const attemptGeneration = async (retryCount = 0): Promise<Itinerary> => {
+      try {
+        const response = await ai.models.generateContent({
+          model: MODEL_FLASH,
+          contents: prompt,
+          config: {
+            responseMimeType: "application/json",
+            responseSchema: {
+              type: Type.OBJECT,
+              properties: {
+                tripTitle: { type: Type.STRING },
+                summary: { type: Type.STRING },
+                totalEstimatedCost: { type: Type.STRING },
+                currency: { type: Type.STRING },
+                days: {
+                  type: Type.ARRAY,
+                  items: {
+                    type: Type.OBJECT,
+                    properties: {
+                      day: { type: Type.INTEGER },
+                      title: { type: Type.STRING },
+                      location: { type: Type.STRING },
+                      estimatedCost: { type: Type.STRING },
+                      activities: {
+                        type: Type.ARRAY,
+                        items: { type: Type.STRING }
+                      },
+                      accommodation: {
+                        type: Type.OBJECT,
+                        properties: {
+                          name: { type: Type.STRING },
+                          rating: { type: Type.STRING },
+                          priceLevel: { type: Type.STRING },
+                          description: { type: Type.STRING }
+                        }
                       }
                     }
                   }
@@ -224,17 +230,25 @@ export const GeminiService = {
               }
             }
           }
-        }
-      });
+        });
 
-      if (response.text) {
-        return JSON.parse(response.text) as Itinerary;
+        if (response.text) {
+          // Robust JSON parsing: Remove potential markdown code blocks
+          const cleanJson = response.text.replace(/```json/g, '').replace(/```/g, '').trim();
+          return JSON.parse(cleanJson) as Itinerary;
+        }
+        throw new Error("No content generated");
+      } catch (error) {
+        if (retryCount < 1) {
+           console.warn("Retrying itinerary generation due to error:", error);
+           return attemptGeneration(retryCount + 1);
+        }
+        console.error("Gemini Itinerary Generation Error:", error);
+        throw error;
       }
-      throw new Error("No content generated");
-    } catch (error) {
-      console.error("Gemini Itinerary Generation Error:", error);
-      throw error;
-    }
+    };
+
+    return attemptGeneration();
   },
 
   /**
@@ -247,32 +261,36 @@ export const GeminiService = {
         history: history,
         config: {
           systemInstruction: TEOS_SYSTEM_PROMPT,
+          tools: [{ googleMaps: {} }],
         }
       });
 
       const result = await chat.sendMessageStream({ message: newMessage });
 
       for await (const chunk of result) {
-        if (chunk.text) {
-          yield chunk.text;
-        }
+        const text = chunk.text || '';
+        const groundingChunks = chunk.candidates?.[0]?.groundingMetadata?.groundingChunks;
+        yield { text, groundingChunks };
       }
     } catch (error) {
       console.error("Gemini Chat Error:", error);
-      yield "I'm having trouble connecting to the travel network right now. Please try again.";
+      yield { 
+        text: "\n\n**Network Note:** I'm experiencing a slight connection delay with the TEOS network. Please check your connection or try asking again in a moment.",
+        groundingChunks: []
+      };
     }
   },
 
   /**
-   * Uses Search Grounding to find live info about a place.
+   * Uses Google Maps Grounding to find live info about a place.
    */
   getLivePlaceInfo: async (query: string) => {
     try {
       const response = await ai.models.generateContent({
         model: MODEL_FLASH,
-        contents: `Provide a short, engaging summary about: ${query}. Include top 3 recent reviews or facts if available.`,
+        contents: `Provide a short, engaging summary about: ${query}. Include top 3 recent reviews, accurate location details, and rating if available.`,
         config: {
-          tools: [{ googleSearch: {} }],
+          tools: [{ googleMaps: {} }],
         }
       });
       return {
@@ -281,7 +299,55 @@ export const GeminiService = {
       };
     } catch (error) {
       console.error("Gemini Live Info Error:", error);
-      return { text: "Information currently unavailable.", sources: [] };
+      return { 
+        text: "I couldn't retrieve live data for this location right now. It might be a temporary network issue.", 
+        sources: [] 
+      };
     }
+  },
+
+  /**
+   * Edit images using Gemini 2.5 Flash Image
+   */
+  editImage: async (base64Image: string, mimeType: string, prompt: string) => {
+    try {
+      const response = await ai.models.generateContent({
+        model: MODEL_IMAGE,
+        contents: {
+          parts: [
+            {
+              inlineData: {
+                data: base64Image,
+                mimeType: mimeType,
+              },
+            },
+            {
+              text: prompt,
+            },
+          ],
+        },
+      });
+      
+      for (const part of response.candidates?.[0]?.content?.parts || []) {
+        if (part.inlineData) {
+            return `data:image/png;base64,${part.inlineData.data}`;
+        }
+      }
+      throw new Error("The model analyzed the image but did not return an edited version. Please try a different prompt.");
+    } catch (error) {
+      console.error("Gemini Image Edit Error:", error);
+      throw error;
+    }
+  },
+
+  /**
+   * Connect to Gemini Live API
+   */
+  connectLive: (callbacks: any, config: any) => {
+    return ai.live.connect({
+        model: MODEL_LIVE,
+        callbacks,
+        config
+    });
   }
 };

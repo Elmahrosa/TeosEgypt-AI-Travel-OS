@@ -34,7 +34,7 @@ const Explore: React.FC = () => {
     <div className="animate-fade-in">
       <header className="mb-8">
         <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Explore Egypt</h1>
-        <p className="text-slate-500 dark:text-slate-400 mt-1">Discover ancient wonders and modern luxuries.</p>
+        <p className="text-slate-500 dark:text-slate-400 mt-1">Discover ancient wonders and modern luxuries with live data.</p>
       </header>
 
       {/* Grid of Destinations */}
@@ -101,25 +101,42 @@ const Explore: React.FC = () => {
 
                   {liveInfo.sources && liveInfo.sources.length > 0 && (
                      <div className="bg-slate-50 dark:bg-slate-700/50 p-4 rounded-xl">
-                       <h4 className="text-sm font-bold text-slate-900 dark:text-white mb-3">Sources & Links</h4>
+                       <h4 className="text-sm font-bold text-slate-900 dark:text-white mb-3">Google Maps Data & Sources</h4>
                        <ul className="space-y-2">
                          {liveInfo.sources.map((chunk, idx) => {
-                            // Extract title and uri from web or maps chunks
-                            const web = chunk.web;
-                            if (web) {
+                            // WEB SOURCE
+                            if (chunk.web) {
                                return (
                                  <li key={idx}>
                                    <a 
-                                     href={web.uri} 
+                                     href={chunk.web.uri} 
                                      target="_blank" 
                                      rel="noopener noreferrer"
                                      className="text-xs text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
                                    >
                                      <ExternalLink className="w-3 h-3" />
-                                     {web.title || web.uri}
+                                     {chunk.web.title || chunk.web.uri}
                                    </a>
                                  </li>
                                );
+                            }
+                            // GOOGLE MAPS SOURCE
+                            if (chunk.maps) {
+                                const mapTitle = chunk.maps.title || "View on Google Maps";
+                                const mapUri = chunk.maps.uri; 
+                                return (
+                                 <li key={idx}>
+                                   <a 
+                                     href={mapUri} 
+                                     target="_blank" 
+                                     rel="noopener noreferrer"
+                                     className="text-xs text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 font-medium"
+                                   >
+                                     <MapPin className="w-3 h-3 text-amber-500" />
+                                     {mapTitle}
+                                   </a>
+                                 </li>
+                                );
                             }
                             return null;
                          })}

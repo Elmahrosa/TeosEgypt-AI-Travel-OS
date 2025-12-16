@@ -28,6 +28,7 @@ export interface ChatMessage {
   text: string;
   timestamp: Date;
   isStreaming?: boolean;
+  groundingChunks?: any[];
 }
 
 export interface Destination {
