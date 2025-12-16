@@ -1,0 +1,7 @@
+{
+  "name": "TEOS Egypt - AI Travel OS",
+  "description": "A next-generation travel operating system for exploring Egypt, featuring AI-powered itinerary planning, real-time travel assistance, and immersive destination discovery powered by Gemini.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
