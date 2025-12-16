@@ -10,9 +10,8 @@
 > **Copyright © 2025 Elmahrosa International. All Rights Reserved.**  
 > This repository — **[TeosEgypt‑AI‑Travel‑OS](https://github.com/Elmahrosa/TeosEgypt-AI-Travel-OS)** — is **NOT open source**.  
 > It is governed and protected under the **TEOS Egypt Sovereign License (TESL)**.  
-> For the complete license text, see [TEOS Egypt Sovereign License (TESL)](https://github.com/Elmahrosa/Teos-Pharaoh-Portal/blob/main/TESL.md).  
 >  
-> **Initial Author:** Elmahrosa International  
+> **Author & Owner:** Elmahrosa International  
 > **Jurisdiction:** Cairo, Arab Republic of Egypt  
 
 ---
