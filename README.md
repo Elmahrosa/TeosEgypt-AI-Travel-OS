@@ -1,4 +1,8 @@
 # TEOS Travel OS — AI Trip Planner
+# TeosEgypt‑AI‑Travel‑OS
+
+[![Built & Owned by Elmahrosa International](https://img.shields.io/badge/Built%20%26%20Owned-Elmahrosa%20International-darkred?style=for-the-badge)](https://github.com/Elmahrosa/TeosEgypt-AI-Travel-OS)
+[![TESL Protected](https://img.shields.io/badge/License-TESL%20Protected-blue?style=for-the-badge)](https://github.com/Elmahrosa/Teos-Pharaoh-Portal/blob/main/TESL.md)
 
 **Your personal travel operating system.**  
 Experience Egypt like never before. From hidden gems to seamless logistics, TEOS handles the details so you can handle the adventure.
