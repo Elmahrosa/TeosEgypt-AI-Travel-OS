@@ -6,6 +6,14 @@ Commercial use requires written approval from Elmahrosa International.
 
 ⚖️ Protected under dual license: PolyForm Noncommercial + TEOS Egypt Sovereign License (TESL).
 
+# 📍 Repo Standing Statement
+
+This repository is a **sovereign original** under **Elmahrosa International — TEOS Egypt**.  
+Governance is anchored in [TEOS-FORGE](https://github.com/Elmahrosa/TEOS-FORGE).  
+Commercial use requires written approval from Elmahrosa International.  
+
+⚖️ Protected under dual license: PolyForm Noncommercial + TEOS Egypt Sovereign License (TESL).
+
 # ?? Repo Standing Statement
 
 This repository is a **sovereign original** under **Elmahrosa International � TEOS Egypt**.  
@@ -72,28 +80,6 @@ Production-structured MVP for TEOS Checkout with Connect Wallet simulation and T
 - **Phase 5:** Liquidity pools & swaps (TEOS/SOL/ERT)
 
 ---
-
-## 🚀 Launch Domain
-Live at:  
-```
-https://travelai.teosegypt.com/
-```
-
-Backend API:  
-```
-https://api.teosegypt.com
-```
-
----
-
-**TEOS Egypt — Civic‑first blockchain travel operating system.**  
-Anchored in Egypt, scaling globally.
-
-## ?? Integration Summary
-This repository is part of the **Elmahrosa Sovereign Stack**.  
-Governance is anchored in **TEOS-FORGE**, with integrations across Bankchain, ERT-LAUNCH, FPBE, and other civic modules.  
-See full details in [docs/integrations.md](https://github.com/Elmahrosa/TEOS-FORGE/blob/main/docs/integrations.md).
-
 
 ## 🔗 Integration Summary
 This repository is part of the **Elmahrosa Sovereign Stack**.  
